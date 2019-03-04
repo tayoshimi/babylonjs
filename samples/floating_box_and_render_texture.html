@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Babylon Template</title>
+
+    <style>
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+    </style>
+     <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+    <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+    <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+  </head>
+
+ <body>
+
+<canvas id="renderCanvas" touch-action="none"></canvas> //touch-action="none" for best results from PEP
+<script type="application/vertexShader" id="vertexShaderCode">
+  #ifdef GL_ES
+      precision highp float;
+  #endif
+
+  // Attributes
+  attribute vec3 position;
+  attribute vec2 uv;
+
+  // Uniforms
+  uniform mat4 worldViewProjection;
+
+  // Normal
+  varying vec2 vUV;
+
+  void main(void) {
+  gl_Position = worldViewProjection * vec4(position, 1.0);
+
+  vUV = uv;
+  }
+  </script>
+
+  <script type="application/fragmentShader" id="fragmentShaderCode">
+  #ifdef GL_ES
+      precision mediump float;
+  #endif
+
+  varying vec2 vUV;
+
+  uniform sampler2D textureSampler;
+
+  float frag(vec2 uv)
+  {
+    return step(0.3, uv.x);
+  }
+  
+  vec4 flagc(vec2 uv)
+  {
+    vec4 red   = vec4(1,0,0,1);
+    vec4 brown = vec4(0.5,0.2,0.1,1);
+    return mix(red, brown,step(0.3, uv.x));
+  }
+
+  vec3 box_line(vec2 uv, float bold)
+  {
+    vec3 color = vec3(0.1);
+    // bottom-left 
+    vec2 bl = smoothstep(vec2(0.),vec2(bold), uv);
+    float pct = bl.x * bl.y;
+
+    // top-right
+    vec2 tr = smoothstep(vec2(0.),vec2(bold),1.0-uv);
+    pct *= tr.x * tr.y;
+    color = vec3(pct);
+    return color;
+  }
+    
+  void main(void) {
+    vec3 colorA = vec3(0.68);
+    vec3 colorB = vec3(0.92);
+    //vec3 colorA = vec3(0.149,0.141,0.912);
+    //vec3 colorB = vec3(1.000,0.833,0.224);
+    //gl_FragColor = texture2D(textureSampler, vUV) * vec4(color, 1.0);
+
+    gl_FragColor = vec4(mix(colorA, colorB, box_line(vUV, 0.12)), 1.);
+  }
+  </script>
+  <script>
+   let hsl2rgb = (h, s, l) => {
+
+    let r, g, b, m, c, x
+
+    if (!isFinite(h)) h = 0
+    if (!isFinite(s)) s = 0
+    if (!isFinite(l)) l = 0
+
+    h /= 60
+    if (h < 0) h = 6 - (-h % 6)
+    h %= 6
+
+    s = Math.max(0, Math.min(1, s / 100))
+    l = Math.max(0, Math.min(1, l / 100))
+
+    c = (1 - Math.abs((2 * l) - 1)) * s
+    x = c * (1 - Math.abs((h % 2) - 1))
+
+    if (h < 1) {
+        r = c
+        g = x
+        b = 0
+    } else if (h < 2) {
+        r = x
+        g = c
+        b = 0
+    } else if (h < 3) {
+        r = 0
+        g = c
+        b = x
+    } else if (h < 4) {
+        r = 0
+        g = x
+        b = c
+    } else if (h < 5) {
+        r = x
+        g = 0
+        b = c
+    } else {
+        r = c
+        g = 0
+        b = x
+    }
+
+    m = l - c / 2
+    r = Math.round((r + m) * 255)
+    g = Math.round((g + m) * 255)
+    b = Math.round((b + m) * 255)
+
+    return { r: r, g: g, b: b }
+  };
+   
+  
+  let canvas = document.getElementById("renderCanvas"); // Get the canvas element 
+  let engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+  let _boxList = new Array();
+  
+  let _count = 0;
+
+  const createScene = () => {
+    const scene = new BABYLON.Scene(engine);
+    scene.clearColor = BABYLON.Color3.Black();
+    
+    const camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 0, 0), scene);
+    camera.setPosition(new BABYLON.Vector3(0, 100, 600));
+    
+    camera.setTarget(new BABYLON.Vector3(0, 0, 0));
+
+    //camera.lowerBetaLimit = 0.1;
+    //camera.upperBetaLimit = (Math.PI / 2) * 0.99;
+    //camera.lowerRadiusLimit = 150;
+    
+    camera.attachControl(canvas,true);     
+
+    let light = new BABYLON.PointLight("pointLight",new BABYLON.Vector3(
+    0,10,0),scene);
+    light.parent = camera;
+    light.diffuse = new BABYLON.Color3(1,1,1);
+
+    // Render target
+    let renderTarget = new BABYLON.RenderTargetTexture("depth", 1024, scene, true);
+    //renderTarget.renderList.push(skybox);
+    scene.customRenderTargets.push(renderTarget);
+    
+    var depthMaterial = new BABYLON.ShaderMaterial("shader", scene, {
+      vertexElement: "vertexShaderCode",
+      fragmentElement: "fragmentShaderCode",
+    },
+    {
+      attributes: ["position", "normal", "uv"],
+      uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
+    });
+
+    renderTarget.onBeforeRender = () => {
+      for (let index = 0; index < renderTarget.renderList.length; index++) {
+      renderTarget.renderList[index]._savedMaterial = renderTarget.renderList[index].material;
+      renderTarget.renderList[index].material = depthMaterial;
+      }
+    }
+
+    renderTarget.onAfterRender = () => {
+      // Restoring previoux material
+      for (let index = 0; index < renderTarget.renderList.length; index++) {
+        renderTarget.renderList[index].material = renderTarget.renderList[index]._savedMaterial;
+      }
+    }
+
+    // Ground
+    let ground = BABYLON.Mesh.CreateGround("ground", 1000, 1000, 1, scene, false);
+    let groundMaterial = new BABYLON.StandardMaterial("ground", scene);
+    groundMaterial.specularColor = BABYLON.Color3.Black();
+    ground.material = groundMaterial;
+      
+    const num = 60;
+    
+    loop: for(let i = 0; i < num; i++){
+      let px = Math.round((Math.random() - 0.5) * 19) * 50 + 25;
+      let pz = Math.round((Math.random() - 0.5) * 19) * 50 + 25;
+      for (let j = 0; j < i; j++) {
+        const box2 = _boxList[j];
+        if(box2.position.x === px && box2.position.z === pz){
+          i -= 1;
+          continue loop;
+        }
+      }
+      const box = BABYLON.Mesh.CreateBox("box",45,scene);
+      box.position = new BABYLON.Vector3(px, 25, pz);
+      
+      box.material = new BABYLON.StandardMaterial("mat", scene);
+      
+      // hsl表色系で色をランダムに作成
+      const h = Math.random() * 360; // 色相
+      const s = 100; // 彩度
+      const l = 60; // 明度
+      const rgb = hsl2rgb(h, s, l);
+      const color = new BABYLON.Color3.FromInts(rgb.r,rgb.g,rgb.b);
+            
+      box.material.diffuseColor = 
+      color;
+      box.material.emmisiveColor = color;
+      _boxList.push(box);
+      renderTarget.renderList.push(box);
+    }
+    
+    // Plane
+    let plane = BABYLON.Mesh.CreatePlane("map", 100, scene);
+    plane.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
+    plane.scaling.y = 1.0 / engine.getAspectRatio(scene.activeCamera);
+
+    
+    // Plane material
+    let mat = new BABYLON.StandardMaterial("plan mat", scene);
+    mat.emissiveTexture = renderTarget;
+    mat.disableLighting = true;
+
+    plane.material = mat;
+    
+    let time = 0;
+
+    scene.registerBeforeRender(() => {
+      time += 1;
+            
+      // 立方体を動かす
+      const length = _boxList.length;
+      for (let i = 0; i < length; i++) {
+          _boxList[i].position.y = 125 + 100 * Math.cos(time * 0.0005 * i + i / 10);
+      }
+      
+    });
+
+    return scene;
+
+  };
+
+  let scene = createScene(); //Call the createScene function
+  //scene.debugLayer.show();
+
+  // Register a render loop to repeatedly render the scene
+  engine.runRenderLoop(() => { 
+    scene.render();
+  });
+
+  // Watch for browser/canvas resize events
+  window.addEventListener("resize", () => { 
+    engine.resize();
+  });
+  
+</script>
+
+ </body>
+
+</html>
