@@ -17,10 +17,17 @@ This sample include HSL function and using set random color.
 ### [Floating boxies and render texture](./samples/floating_box_and_render_texture.html)
 
 
-## Game Sample List
+## A little complex Sample List
+
+少し複雑なサンプル
 
 ### [Taping operate orb on Grid field.](./samples/tap_move_on_grid_ground.html)
+
+赤玉をタップ操作で転がす。
+グリッドの地面はpixelシェーダで実装。
 
 ## Other
 
 ### [Execute samples link](https://tayoshimi.github.io/babylonjs/)
+
+Web上でサンプルを動作させるためのリンク。
