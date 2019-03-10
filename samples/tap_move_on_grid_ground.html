@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Babylon Template</title>
+
+    <style>
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+    </style>
+    <script src="https://cdn.babylonjs.com/Oimo.js"></script>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+    <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+    <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+  </head>
+<script type="application/vertexShader" id="vertexShaderCode">
+  #ifdef GL_ES
+      precision highp float;
+  #endif
+
+  // Attributes
+  attribute vec3 position;
+  attribute vec2 uv;
+
+  // Uniforms
+  uniform mat4 worldViewProjection;
+
+  // Normal
+  varying vec2 vUV;
+
+  void main(void) {
+    gl_Position = worldViewProjection * vec4(position, 1.0);
+
+    vUV = uv;
+  }
+  </script>
+
+  <script type="application/fragmentShader" id="fragmentShaderCode">
+  #ifdef GL_ES
+      precision highp float;
+  #endif
+
+  varying vec2 vUV;  // = vec2 v_tex_coord(Pythonista 3)
+  
+  uniform sampler2D textureSampler;
+
+ #define TILE_NUM 100.0
+  
+  void main(void) {
+      vec3 c1 = vec3(.54);
+      vec3 c2 = vec3(.14);
+      //vec3 c1 = vec3(0.149,0.141,0.912);
+      //vec3 c2 = vec3(1.000,0.833,0.224);
+      
+       // 分割
+      vec2 st = vUV * TILE_NUM;
+      
+      float y = mod(floor(st.x) + floor(st.y), 2.0);
+      vec3 color = vec3(mix(c1, c2, y));
+
+      gl_FragColor = vec4(color, 1.);
+  }
+  
+  </script>
+ <body>
+  <canvas id="renderCanvas" touch-action="none"></canvas> //touch-action="none" for best results from PEP
+  <script>
+  let canvas = document.getElementById("renderCanvas"); // Get the canvas element 
+  let engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+  let createScene = () => {
+    let scene = new BABYLON.Scene(engine);
+    scene.clearColor = new BABYLON.Color3(.4, .6, .9);
+    var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 30, BABYLON.Vector3.Zero(), scene);
+    camera.setPosition(new BABYLON.Vector3(20, 20, 40));
+    camera.lowerBetaLimit = 0.1;
+    camera.upperBetaLimit = (Math.PI / 2) * 0.99;
+    camera.lowerRadiusLimit = 50;
+  
+    camera.attachControl(canvas, true, false);
+    
+    // Physics
+    let gravityVector = new BABYLON.Vector3(0,-9.81, 0);
+    let physicsPlugin = new BABYLON.OimoJSPlugin();
+    scene.enablePhysics(gravityVector, physicsPlugin);
+
+    var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
+
+    /*let pl = new BABYLON.PointLight("pl", new BABYLON.Vector3(0, 0, 0), scene);
+    pl.diffuse = new BABYLON.Color3(1, 1, 1);
+    pl.specular = new BABYLON.Color3(1, 1, 0.8);
+    pl.intensity = 0.95;
+    pl.position = camera.position;*/
+
+    let sphereRadius = 2.0;
+    let boxSize = 4.0;
+    let ground = BABYLON.MeshBuilder.CreateGround("gd", { width: 1000.0, height: 1000.0 }, scene);
+    //api func
+    
+    let matGround = new BABYLON.StandardMaterial("mg", scene);
+
+    matGround.diffuseColor = new BABYLON.Color3(0.65, 0.6, 0.5);
+    
+    let boxShader = { fragmentElement: "fragmentShaderCode"
+      };
+  
+    let procText = new BABYLON.CustomProceduralTexture("customtext", boxShader, 1024, scene);
+      
+    matGround.diffuseTexture = procText;
+    
+    ground.material = matGround;
+    ground.freezeWorldMatrix();
+    matGround.freeze();
+    
+    ground.checkCollisions = true;
+    ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, scene);
+    
+
+    //光の球
+    var orb = BABYLON.MeshBuilder.CreateSphere("sphere1",{diameter:2},scene);
+    orb.position = new BABYLON.Vector3(0,4,0);
+    var orbMat = new BABYLON.StandardMaterial("sphere", scene);
+    orbMat.diffuseColor = new BABYLON.Color3(1,0,0);
+    orbMat.emissiveColor = new BABYLON.Color3(1,0,0);
+    orb.material = orbMat;
+    
+    orb.checkCollisions = true;
+    orb.physicsImpostor = new BABYLON.PhysicsImpostor(orb, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 2, friction: 0.4, restitution: 0.3 }, scene);
+    
+    var gl = new BABYLON.GlowLayer("glow", scene,{
+        //mainTextureFixedSize: 1024,
+        blurKernelSize: 64
+    });
+    gl.intensity = 1;
+    gl.customEmissiveColorSelector = function(mesh, subMesh, material, result) {
+      if (mesh.name === "sphere1") {
+          result.set(1, 0, 0, 1);
+      } else {
+          result.set(0, 0, 0, 0);
+      }
+    }
+    
+    camera.parent = orb;
+        
+    var targetPos = orb.position;
+    var delta = BABYLON.Vector3.Zero();
+    var fps = 60;
+    let move_speed = 0.5;
+    let Epsilon = 0.1;
+    var last_distance = Number.POSITIVE_INFINITY;
+
+    // Create a particle system
+    var particleSystem = new BABYLON.ParticleSystem("particles", 2000, scene);
+
+    //Texture of each particle
+    particleSystem.particleTexture = new BABYLON.Texture("../textures/flare.png", scene);
+
+     // Where the particles come from
+    particleSystem.emitter =  new BABYLON.Vector3(0.0, 0.0, 0.0); // the starting object, the emitter
+    var emitterType = new BABYLON.SphereParticleEmitter();
+    emitterType.radius = 1;
+    emitterType.radiusRange = 0;
+
+    particleSystem.particleEmitterType = emitterType;
+
+    // Colors of all particles
+    particleSystem.color1 = new BABYLON.Color4(0.7, 0.8, 1.0, 1.0);
+    particleSystem.color2 = new BABYLON.Color4(0.2, 0.5, 1.0, 1.0);
+    particleSystem.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
+
+    // Size of each particle (random between...
+    particleSystem.minSize = 0.1;
+    particleSystem.maxSize = 0.5;
+
+    // Life time of each particle (random between...
+    particleSystem.minLifeTime = 0.1;
+    particleSystem.maxLifeTime = 1.0;
+
+    // Emission rate
+    particleSystem.emitRate = 1400;
+
+    // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
+    particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+
+    // Set the gravity of all particles
+    particleSystem.gravity = new BABYLON.Vector3(0, 0, 0);
+
+    // Angular speed, in radians
+    particleSystem.minAngularSpeed = 0;
+    particleSystem.maxAngularSpeed = Math.PI;
+
+    // Speed
+    particleSystem.minEmitPower = 10;
+    particleSystem.maxEmitPower = 10;
+    particleSystem.updateSpeed = 0.02;
+    particleSystem.targetStopDuration = 2;
+
+    particleSystem.addLifeTimeGradient(0, 0.8);
+    particleSystem.addLifeTimeGradient(1, 0.1);
+
+    //particleSystem.addEmitRateGradient(0, 5, 10);
+    //particleSystem.addEmitRateGradient(0.5, 5, 10);
+    //particleSystem.addEmitRateGradient(1.0, 800, 1000);
+
+    // Limit velocity
+    particleSystem.addLimitVelocityGradient(0, 1);
+  particleSystem.addLimitVelocityGradient(0.120, 0.983); particleSystem.addLimitVelocityGradient(0.445, 0.780); particleSystem.addLimitVelocityGradient(0.691, 0.502); particleSystem.addLimitVelocityGradient(0.930, 0.05); particleSystem.addLimitVelocityGradient(1.0, 0);
+    particleSystem.limitVelocityDamping = 0.6;
+  
+  
+    particleSystem.addStartSizeGradient(0, 8);
+    particleSystem.addStartSizeGradient(1, 1);
+
+    //scene.debugLayer.show();
+
+    scene.onPointerObservable.add((pointerInfo) => {
+      switch (pointerInfo.type) {
+        case BABYLON.PointerEventTypes.POINTERDOWN:
+            //console.log("POINTER DOWN");
+            break;
+        case BABYLON.PointerEventTypes.POINTERUP:
+            //console.log("POINTER UP");
+            break;
+        case BABYLON.PointerEventTypes.POINTERMOVE:
+            //console.log("POINTER MOVE");
+            break;
+        case BABYLON.PointerEventTypes.POINTERPICK:
+            //console.log("POINTER PICK" + pickInfo.pickedPoint);
+            var pickInfo = pointerInfo.pickInfo;
+            if (pickInfo.hit) {
+              particleSystem.emitter = new BABYLON.Vector3(pickInfo.pickedPoint.x, pickInfo.pickedPoint.y+0.1, pickInfo.pickedPoint.z);
+              particleSystem.reset();
+              // Start the particle system
+              particleSystem.start();
+              
+              targetPos = pickInfo.pickedPoint;
+              targetPos.y = orb.position.y;
+              delta = pickInfo.pickedPoint.subtract(orb.position).normalize().scale(scene.getAnimationRatio()*move_speed);
+              
+              last_distance = Number.POSITIVE_INFINITY;  
+            }
+            break;
+        case BABYLON.PointerEventTypes.POINTERTAP:
+            //console.log("POINTER TAP");
+            break;
+        case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
+           // console.log("POINTER DOUBLE-TAP");
+            break;
+        default:
+            break;
+        }
+    });
+    
+    scene.registerBeforeRender(() => {
+    let distance = BABYLON.Vector3.Distance(targetPos, orb.position);
+    if(distance < Epsilon || distance > last_distance ){
+    } else {
+      last_distance = distance;
+      orb.position.addInPlace(delta);
+    }
+            
+    });
+
+      return scene;
+
+    };
+
+    /******* End of the create scene function ******/    
+
+    let scene = createScene(); //Call the createScene function
+    //scene.debugLayer.show();
+
+    // Register a render loop to repeatedly render the scene
+    engine.runRenderLoop(() => { 
+            scene.render();
+    });
+
+    // Watch for browser/canvas resize events
+    window.addEventListener("resize", () => { 
+            engine.resize();
+    });
+  </script>
+
+ </body>
+
+</html>
