@@ -1,3 +1,9 @@
+/**
+ * Babylonjsによる比較的シンプルなシーン集
+ * @example import { CubeScene } from '../modulejs/BasicScenes.js';
+ * @note insert <script type="module"> ... </script>
+ */
+
 //import * as BABYLON from 'babylonjs';
 import { hsl2rgb } from './hsl2rgb.js';
 
@@ -27,12 +33,12 @@ export class CubeScene {
               BABYLON.Tools.ToRadians(45),
               20.0,box.position,scene);*/
 
-      camera.attachControl(this._canvas,true);
+    camera.attachControl(this._canvas,true);
 
-      let light = new BABYLON.PointLight("pointLight",new BABYLON.Vector3(
+    let light = new BABYLON.PointLight("pointLight",new BABYLON.Vector3(
       0,10,0),scene);
-      light.parent = camera;
-      light.diffuse = new BABYLON.Color3(1,1,1);
+    light.parent = camera;
+    light.diffuse = new BABYLON.Color3(1,1,1);
     
     var faceColors = new Array(6);
     //[...new Array(faceColors).keys()].forEach(i => {
