@@ -47,6 +47,8 @@
     //let skybox = GameUtil.CreateStarfieldSkybox(scene);
     let skybox = GameUtil.CreateBlueSkybox(scene);
     
+    let box = GameUtil.CreateRandColorCube(new BABYLON.Vector3(4,4,0), 4, scene);
+    
 
     engine.runRenderLoop(() => { 
       scene.render();

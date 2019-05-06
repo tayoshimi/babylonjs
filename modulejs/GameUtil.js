@@ -23,6 +23,14 @@ export default class GameUtil {
       return Math.floor(Math.random() * n);
   }
   
+   /**
+    * Return  a random number[0 - n]
+    * @param n
+    */
+  static RandColor4(n) {
+      return Math.floor(Math.random() * n);
+  }
+  
   /**
    * Creates a starfield skybox
    * @param scene
@@ -75,6 +83,38 @@ export default class GameUtil {
     ground.position.y = -1;
     ground.material = grassMaterial;
     return ground;
+  }
+  
+  /**
+    * Create random color cube
+    * @param BABYLON.Vector3 pos
+    * @param size
+    * @param scene
+    * @return box mesh
+    */
+  static CreateRandColorCube(pos, size, scene)
+  {
+    // hsl表色系で色をランダムに作成
+      const h = Math.random() * 360; // 色相
+      const s = 100; // 彩度
+      const l = 60; // 明度
+      const rgb = hsl2rgb(h, s, l);
+      const color = new BABYLON.Color4.FromInts(rgb.r,rgb.g,rgb.b, 255);
+      
+      let options = {
+      size: size,
+      //faceColors : faceColors
+    };
+    
+    let box = BABYLON.MeshBuilder.CreateBox("box", options, scene);
+    box.material = new BABYLON.StandardMaterial("mat", scene);
+    
+    box.material.diffuseColor = color;
+    box.material.emmisiveColor = color;
+    
+    box.position = pos;
+  
+    return box;
   }
 }
 
