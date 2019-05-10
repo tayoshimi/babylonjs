@@ -4,6 +4,7 @@
  * @note insert <script type="module"> ... </script>
  */
 //import * as BABYLON from 'babylonjs';
+
 import { hsl2rgb } from './hsl2rgb.js';
 
 /**
@@ -115,6 +116,44 @@ export default class GameUtil {
     box.position = pos;
   
     return box;
+  }
+  
+  /**
+   * Creates a BABYLONJS GUI with a single Button
+   * @param btnText: string
+   * @param btnClicked: (button: GUI.Button) => void
+   */
+  static createGui(btnText, btnClicked)
+  {
+
+    let guiTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+    let btnTest = BABYLON.GUI.Button.CreateSimpleButton("but1", btnText);
+    btnTest.width = "150px";
+    btnTest.height = "40px";
+    btnTest.color = "white";
+    btnTest.background = "grey";
+    btnTest.onPointerUpObservable.add(() => {
+        if (btnClicked) {
+            btnClicked(btnTest);
+        }
+    });
+    btnTest.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    btnTest.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    btnTest.left = 12;
+    btnTest.top = 12;
+    //guiTexture.addControl(btnTest);
+    
+    var textBlock = new BABYLON.GUI.TextBlock();
+    textBlock.text = "Choose color:";
+    //textBlock.color = "#ffffff";
+    textBlock.color = "#ff0000";
+    textBlock.height = "30px";
+    textBlock.left = 12;
+    textBlock.top = 12;
+    guiTexture.addControl(textBlock);
+    
+    return guiTexture;
   }
 }
 
