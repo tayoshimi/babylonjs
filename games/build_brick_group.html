@@ -48,13 +48,13 @@
     let scene = new BABYLON.Scene(engine);
     scene.clearColor = new BABYLON.Color3(.4, .6, .9);
     const camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 0, 0), scene);
-    camera.setPosition(new BABYLON.Vector3(0, 100, 600));
+    camera.setPosition(new BABYLON.Vector3(80, 100, 300));
     
     camera.setTarget(new BABYLON.Vector3(0, 0, 0));
 
-    //camera.lowerBetaLimit = 0.1;
-    //camera.upperBetaLimit = (Math.PI / 2) * 0.99;
-    //camera.lowerRadiusLimit = 150;
+    camera.lowerBetaLimit = 0.1;
+    camera.upperBetaLimit = (Math.PI / 2) * 0.99;
+    camera.lowerRadiusLimit = 150;
     
     camera.attachControl(canvas,true);     
 
@@ -92,9 +92,20 @@
     
     let guiTexture = GameUtil.createGui("cad", null);
     
+    let textBlock = new BABYLON.GUI.TextBlock();
+    textBlock.text = "Text";
+    textBlock.fontSize = 50;
+    textBlock.color = "#ffffff";
+    //textBlock.color = "#ff0000";
+    textBlock.height = "60px";
+    textBlock.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    textBlock.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
     
-    const CUBE_NUM = 200;
-    const X_MAX = 20;
+    guiTexture.addControl(textBlock);
+    
+    
+    const CUBE_NUM = 120;
+    const X_MAX = 10;
     const CUBE_SIZE = 4;
     let sx = - X_MAX / 2 * CUBE_SIZE;
     let sy = 2;
@@ -119,6 +130,7 @@
     ball.physicsImpostor = new BABYLON.PhysicsImpostor(ball, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 2, friction: 0, restitution: 0.9 }, scene);
     
     ball.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 0, -100), ball.getAbsolutePosition());
+    
     scene.onPointerObservable.add((pointerInfo) => {
       switch (pointerInfo.type) {
         case BABYLON.PointerEventTypes.POINTERDOWN:
@@ -132,22 +144,22 @@
             break;
         case BABYLON.PointerEventTypes.POINTERPICK:
             //console.log("POINTER PICK" + pickInfo.pickedPoint);
-            var pickInfo = pointerInfo.pickInfo;
+            let pickInfo = pointerInfo.pickInfo;
             if (pickInfo.hit) {
-              particleSystem.emitter = new BABYLON.Vector3(pickInfo.pickedPoint.x, pickInfo.pickedPoint.y+0.1, pickInfo.pickedPoint.z);
-              particleSystem.reset();
+              //particleSystem.emitter = new BABYLON.Vector3(pickInfo.pickedPoint.x, pickInfo.pickedPoint.y+0.1, pickInfo.pickedPoint.z);
+              //particleSystem.reset();
               // Start the particle system
-              particleSystem.start();
+              //particleSystem.start();
               
-              targetPos = pickInfo.pickedPoint;
-              targetPos.y = orb.position.y;
-              delta = pickInfo.pickedPoint.subtract(orb.position).normalize().scale(scene.getAnimationRatio()*move_speed);
+              let targetPos = pickInfo.pickedPoint;
+              targetPos.y = ball.position.y;
+              delta = pickInfo.pickedPoint.subtract(ball.position).normalize().scale(scene.getAnimationRatio()*move_speed);
               delta.y = 0;
 
-              orb.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero());
+              ball.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero());
               let contactLocalRefPoint = BABYLON.Vector3.Zero();
               //orb.physicsImpostor.applyForce(delta.scale(200), orb.getAbsolutePosition().add(contactLocalRefPoint));
-              orb.physicsImpostor.applyImpulse(delta.scale(200), orb.getAbsolutePosition().add(contactLocalRefPoint));
+              ball.physicsImpostor.applyImpulse(delta.scale(200), ball.getAbsolutePosition().add(contactLocalRefPoint));
    
               last_distance = Number.POSITIVE_INFINITY;  
             }

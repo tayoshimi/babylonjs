@@ -144,15 +144,6 @@ export default class GameUtil {
     btnTest.top = 12;
     //guiTexture.addControl(btnTest);
     
-    var textBlock = new BABYLON.GUI.TextBlock();
-    textBlock.text = "Choose color:";
-    //textBlock.color = "#ffffff";
-    textBlock.color = "#ff0000";
-    textBlock.height = "30px";
-    textBlock.left = 12;
-    textBlock.top = 12;
-    guiTexture.addControl(textBlock);
-    
     return guiTexture;
   }
 }
