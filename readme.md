@@ -21,10 +21,12 @@ This sample include HSL function and using set random color.
 
 少し複雑なサンプル
 
-### [Taping operate orb on Grid field.](./samples/tap_move_on_grid_ground.html)
+### [Phyisics sample](./samples/build_brick_group.html)
 
 赤玉をタップ操作で転がす。
 グリッドの地面はpixelシェーダで実装。
+
+## [Floating boxies and render texture](./games/floating_box_and_render_texture.html
 
 ## Other
 
