@@ -21,7 +21,7 @@ This sample include HSL function and using set random color.
 
 少し複雑なサンプル
 
-### [Floating boxies and render texture](./samples/floating_box_and_render_texture.html
+### [Floating boxies and render texture](./samples/floating_box_and_render_texture.html)
 
 赤玉をタップ操作で転がす。
 グリッドの地面はpixelシェーダで実装。
