@@ -22,6 +22,7 @@
     </style>
 
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <!--script type="module" src="./js/CubeSceneBasic.js"></script-->
     <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
@@ -31,6 +32,8 @@
   <canvas id="renderCanvas" touch-action="none"></canvas> //touch-action="none" for best results from PEP
 
   <script type="module">
+  import { hsl2rgb } from '../modulejs/hsl2rgb.js';
+  
     let canvas = document.getElementById("renderCanvas"); // Get the canvas element 
     let engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
@@ -73,9 +76,9 @@
     box.material = new BABYLON.StandardMaterial("mat", scene);
 
 
-	let guiTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-		
-	let textBlock = new BABYLON.GUI.TextBlock();
+    let guiTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+    let textBlock = new BABYLON.GUI.TextBlock();
     textBlock.text = "Text";
     textBlock.fontSize = 50;
     textBlock.color = "#ffffff";
@@ -85,12 +88,12 @@
     textBlock.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
     
     guiTexture.addControl(textBlock);
-		
-	return scene;
-	};
-		
-	let scene = createScene(); //Call the createScene function
-		
+
+    return scene;
+  };
+
+  let scene = createScene(); //Call the createScene function
+
    engine.runRenderLoop(() => {
    		scene.render();
    });
