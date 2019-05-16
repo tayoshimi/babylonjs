@@ -34,19 +34,71 @@
     let canvas = document.getElementById("renderCanvas"); // Get the canvas element 
     let engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
-    import { CubeScene } from '../modulejs/BasicScenes.js';
-    let cubeScn = new CubeScene(canvas, engine);
+    let createScene = () => {
+    let scene = new BABYLON.Scene(engine);
+    scene.clearColor = new BABYLON.Color3.Black();
     
-    let scene = cubeScn.createScene();
+    const camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 0, 0), scene);
+      camera.setPosition(new BABYLON.Vector3(0, 10, 20));
+      
+    camera.setTarget(new BABYLON.Vector3(0, 0, 0));
+    
+    camera.attachControl(canvas,true);
 
-    engine.runRenderLoop(() => { 
-            scene.render();
-    });
+    let light = new BABYLON.PointLight("pointLight",new BABYLON.Vector3(
+      0,10,0),scene);
+    light.parent = camera;
+    light.diffuse = new BABYLON.Color3(1,1,1);
+    
+    var faceColors = new Array(6);
+    //[...new Array(faceColors).keys()].forEach(i => {
+    for(var i = 0; i < 6; i++) {
+      // hsl表色系で色をランダムに作成
+      const h = Math.random() * 360; // 色相
+      const s = 100; // 彩度
+      const l = 60; // 明度
+      const rgb = hsl2rgb(h, s, l);
+      const color = new BABYLON.Color4.FromInts(rgb.r,rgb.g,rgb.b, 255);
+      
+      faceColors[i] = color;
+      
+    }
+    
+    let options = {
+      size: 4,
+      faceColors : faceColors
+    };
+    
+    let box = BABYLON.MeshBuilder.CreateBox("box", options, scene);
+    box.material = new BABYLON.StandardMaterial("mat", scene);
 
-    // Watch for browser/canvas resize events
-    window.addEventListener("resize", () => { 
+
+	let guiTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+		
+	let textBlock = new BABYLON.GUI.TextBlock();
+    textBlock.text = "Text";
+    textBlock.fontSize = 50;
+    textBlock.color = "#ffffff";
+    //textBlock.color = "#ff0000";
+    textBlock.height = "60px";
+    textBlock.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    textBlock.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    
+    guiTexture.addControl(textBlock);
+		
+	return scene;
+	};
+		
+	let scene = createScene(); //Call the createScene function
+		
+   engine.runRenderLoop(() => {
+   		scene.render();
+   });
+
+  // Watch for browser/canvas resize events
+  window.addEventListener("resize", () => { 
             engine.resize();
-    });
+  });
   </script>
 
  </body>
