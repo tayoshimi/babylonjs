@@ -62,5 +62,5 @@ export function hsl2rgb(h, s, l) {
   b = Math.round((b + m) * 255);
 
   return { r: r, g: g, b: b };
-};
+}
 

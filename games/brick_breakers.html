@@ -80,7 +80,7 @@
   <canvas id="renderCanvas" touch-action="none"></canvas> //touch-action="none" for best results from PEP
   <script type="module">
   
-  //import GameUtil from '../modulejs/GameUtil.js';
+  import GameUtil from '../modulejs/GameUtil.js';
   import ExplosionParticleEffect from '../modulejs/ExplosionParticleEffect.js';
     
   let canvas = document.getElementById("renderCanvas"); // Get the canvas element 
@@ -131,6 +131,27 @@
     
     ground.checkCollisions = true;
     ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, scene);
+    
+    const CUBE_NUM = 120;
+    const X_MAX = 10;
+    const CUBE_SIZE = 4;
+    let _boxList = new Array();
+    let _count = 0;
+    let sx = - X_MAX / 2 * CUBE_SIZE;
+    let sy = 2;
+    
+    for(let i = 0; i < CUBE_NUM; i++) {
+    let px = sx + CUBE_SIZE * Math.floor(i % X_MAX);
+    let py = sy + CUBE_SIZE * Math.floor(i / X_MAX);
+    //let py = Math.round((Math.random() - 0.5) * 19) * 50 + 25;
+    
+    let box = GameUtil.CreateRandColorCube(new BABYLON.Vector3(px,py,0), CUBE_SIZE, scene);
+    
+    box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 2, friction: 0.4, restitution: 1 }, scene);
+    
+    _boxList.push(box);
+    
+    }
     
 
     //光の球
