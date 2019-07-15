@@ -21,14 +21,13 @@ This sample include HSL function and using set random color.
 
 少し複雑なサンプル
 
-### [Floating boxies and render texture](./samples/floating_box_and_render_texture.html)
+### [Tap move sample](./samples/tap_move_on_grid_ground_s02.html)
 
 赤玉をタップ操作で転がす。
 グリッドの地面はpixelシェーダで実装。
 
-### [Phyisics sample](./games/build_brick_group.html)
 
-
+### [Brick breaker](./games/brick_breakers.html)
 
 ## Other
 

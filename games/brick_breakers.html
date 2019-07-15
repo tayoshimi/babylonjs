@@ -141,15 +141,15 @@
     let sy = 2;
     
     for(let i = 0; i < CUBE_NUM; i++) {
-    let px = sx + CUBE_SIZE * Math.floor(i % X_MAX);
-    let py = sy + CUBE_SIZE * Math.floor(i / X_MAX);
-    //let py = Math.round((Math.random() - 0.5) * 19) * 50 + 25;
+      let px = sx + CUBE_SIZE * Math.floor(i % X_MAX);
+      let py = sy + CUBE_SIZE * Math.floor(i / X_MAX);
+      //let py = Math.round((Math.random() - 0.5) * 19) * 50 + 25;
     
-    let box = GameUtil.CreateRandColorCube(new BABYLON.Vector3(px,py,0), CUBE_SIZE, scene);
+      let box = GameUtil.CreateRandColorCube(new BABYLON.Vector3(px,py,-4), CUBE_SIZE, scene);
     
-    box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 2, friction: 0.4, restitution: 1 }, scene);
+      box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 2, friction: 0.4, restitution: 1 }, scene);
     
-    _boxList.push(box);
+      _boxList.push(box);
     
     }
     
