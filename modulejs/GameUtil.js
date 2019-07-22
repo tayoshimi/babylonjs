@@ -87,6 +87,41 @@ export default class GameUtil {
   }
   
   /**
+      * Create random color cube
+      * @param BABYLON.Vector3 pos
+      * @param size
+      * @param scene
+      * @return box mesh
+  */
+  static CreateRandColorCube3(pos, width, height, depth, scene)
+  {
+    // hsl表色系で色をランダムに作成
+    const h = Math.random() * 360; // 色相
+    const s = 100; // 彩度
+    const l = 60; // 明度
+    const rgb = hsl2rgb(h, s, l);
+    const color = new BABYLON.Color4.FromInts(rgb.r,rgb.g,rgb.b, 255);
+    
+    let options = {
+      width: width,
+      height: height,
+      depth: depth
+      //faceColors : faceColors
+    };
+    
+    let box = BABYLON.MeshBuilder.CreateBox("box", options, scene);
+    box.material = new BABYLON.StandardMaterial("mat", scene);
+    
+    box.material.diffuseColor = color;
+    box.material.emmisiveColor = color;
+    
+    box.position = pos;
+    
+    return box;
+  }
+  
+  
+  /**
     * Create random color cube
     * @param BABYLON.Vector3 pos
     * @param size

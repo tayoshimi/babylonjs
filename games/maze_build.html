@@ -35,8 +35,8 @@
   <script type="module">
   
   import GameUtil from '../modulejs/GameUtil.js';
-  import ExplosionParticleEffect from '../modulejs/ExplosionParticleEffect.js';
-    
+  import PlayerOrb from '../modulejs/PlayerOrb.js';
+  import { MazeGenerator } from '../modulejs/MazeGenerator.js';
   let canvas = document.getElementById("renderCanvas"); // Get the canvas element 
   let engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
@@ -77,12 +77,6 @@
     //matGround.diffuseColor = BABYLON.Color3.Purple();
     matGround.specularColor = BABYLON.Color3.Black();
     
-    //let boxShader = { fragmentElement: "fragmentShaderCode" };
-  
-    //let procText = new BABYLON.CustomProceduralTexture("customtext", boxShader, 1024, scene);
-      
-    //matGround.diffuseTexture = procText;
-    
     ground.material = matGround;
     ground.freezeWorldMatrix();
     matGround.freeze();
@@ -91,6 +85,9 @@
     ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, scene);
     
     let guiTexture = GameUtil.createGui("cad", null);
+    
+    let player = new PlayerOrb(scene);
+    player.Create(scene);
     
     let textBlock = new BABYLON.GUI.TextBlock();
     textBlock.text = "Text";
@@ -106,11 +103,51 @@
     
     const CUBE_NUM = 120;
     const X_MAX = 10;
-    const CUBE_SIZE = 4;
-    let sx = - X_MAX / 2 * CUBE_SIZE;
-    let sy = 2;
+    const MAZE_COL = 13;
+    const MAZE_ROW = 15;
+    //const CUBE_SIZE = 4;
+    const WALL_SIZE = 1;
+    const ROAD_SIZE = 4;
     
-    for(let i = 0; i < CUBE_NUM; i++) {
+    //let sx = - X_MAX / 2 * CUBE_SIZE;
+    //let sy = 2;
+    
+    let maze = new MazeGenerator(MAZE_ROW, MAZE_COL);
+    maze.CreateScene();
+    let tbl = maze.GetState2D();
+    //let digPath = maze.GetDigPath();
+    
+    // cube用の二次元配列を作る
+    // indexで直接指定したいので
+    let a_cube = new Array();
+    
+    // 奇数インデックスの矩形幅を2倍にする
+    tbl.forEach((t1, i) => {
+    let a_tmp = new Array();
+    t1.forEach((t2, j) => {
+      if(t2 == "0"){
+      
+      let tmp_w = (j%2 == 0) ? WALL_SIZE :  ROAD_SIZE;
+      let tmp_h = (i%2 == 0) ? WALL_SIZE :  ROAD_SIZE;
+      
+      let x = Math.floor(j/2)*(WALL_SIZE+ROAD_SIZE) + WALL_SIZE * (j%2);
+      let z = Math.floor(i/2)*(WALL_SIZE+ROAD_SIZE) + WALL_SIZE * (i%2);
+      
+      let box = GameUtil.CreateRandColorCube3(new BABYLON.Vector3(x+tmp_w/2,WALL_SIZE/2,z+tmp_h/2), tmp_w, WALL_SIZE, tmp_h, scene);
+      //box.width = tmp_w;
+      //box.height = tmp_h;
+      
+      box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.4, restitution: 1 }, scene);
+      
+      //console.log(`{x:${x}, y:${y}, width:${tmp_w}, height:${tmp_h}}`);
+  
+      a_tmp.push(box);
+      }
+    });
+    a_cube.push(a_tmp);
+    });
+    
+    /*for(let i = 0; i < CUBE_NUM; i++) {
       let px = sx + CUBE_SIZE * Math.floor(i % X_MAX);
       let py = sy + CUBE_SIZE * Math.floor(i / X_MAX);
       //let py = Math.round((Math.random() - 0.5) * 19) * 50 + 25;
@@ -121,71 +158,8 @@
       
       _boxList.push(box);
       
-    }
-    
-    // 適当なボール操作
-    let ball = BABYLON.MeshBuilder.CreateSphere("ball", {diameter:10}, scene);
-    
-    ball.position = new BABYLON.Vector3(0,6,50);
-    
-    ball.physicsImpostor = new BABYLON.PhysicsImpostor(ball, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 2, friction: 0, restitution: 0.9 }, scene);
-    
-    ball.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 0, -100), ball.getAbsolutePosition());
-    
-    scene.onPointerObservable.add((pointerInfo) => {
-      switch (pointerInfo.type) {
-        case BABYLON.PointerEventTypes.POINTERDOWN:
-            //console.log("POINTER DOWN");
-            break;
-        case BABYLON.PointerEventTypes.POINTERUP:
-            //console.log("POINTER UP");
-            break;
-        case BABYLON.PointerEventTypes.POINTERMOVE:
-            //console.log("POINTER MOVE");
-            break;
-        case BABYLON.PointerEventTypes.POINTERPICK:
-            //console.log("POINTER PICK" + pickInfo.pickedPoint);
-            let pickInfo = pointerInfo.pickInfo;
-            if (pickInfo.hit) {
-              //particleSystem.emitter = new BABYLON.Vector3(pickInfo.pickedPoint.x, pickInfo.pickedPoint.y+0.1, pickInfo.pickedPoint.z);
-              //particleSystem.reset();
-              // Start the particle system
-              //particleSystem.start();
-              
-              let targetPos = pickInfo.pickedPoint;
-              targetPos.y = ball.position.y;
-              delta = pickInfo.pickedPoint.subtract(ball.position).normalize().scale(scene.getAnimationRatio()*move_speed);
-              delta.y = 0;
+    }*/
 
-              ball.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero());
-              let contactLocalRefPoint = BABYLON.Vector3.Zero();
-              //orb.physicsImpostor.applyForce(delta.scale(200), orb.getAbsolutePosition().add(contactLocalRefPoint));
-              ball.physicsImpostor.applyImpulse(delta.scale(200), ball.getAbsolutePosition().add(contactLocalRefPoint));
-   
-              last_distance = Number.POSITIVE_INFINITY;  
-            }
-            break;
-        case BABYLON.PointerEventTypes.POINTERTAP:
-            //console.log("POINTER TAP");
-            break;
-        case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
-           // console.log("POINTER DOUBLE-TAP");
-            break;
-        default:
-            break;
-        }
-    });
-    
-    
-    scene.registerBeforeRender(() => {
-      // 立方体を動かす
-      /*
-      const length = _boxList.length;
-      for (let i = 0; i < length; i++) {
-          _boxList[i].position.y = 125 + 100 * Math.cos(time * 0.0005 * i + i / 10);
-      }*/
-      
-    });
 
       return scene;
 
