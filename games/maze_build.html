@@ -103,11 +103,13 @@
     
     const CUBE_NUM = 120;
     const X_MAX = 10;
-    const MAZE_COL = 13;
-    const MAZE_ROW = 15;
+    const MAZE_COL = 23;
+    const MAZE_ROW = 25;
     //const CUBE_SIZE = 4;
-    const WALL_SIZE = 1;
-    const ROAD_SIZE = 4;
+    const WALL_WIDTH = 1;
+    const WALL_HEIGHT = 4;
+    const ROAD_WIDTH = 4;
+    
     
     //let sx = - X_MAX / 2 * CUBE_SIZE;
     //let sy = 2;
@@ -121,47 +123,32 @@
     // indexで直接指定したいので
     let a_cube = new Array();
     
-    // 奇数インデックスの矩形幅を2倍にする
+    // 奇数インデックスの矩形幅を規定のサイズ乗算する
     tbl.forEach((t1, i) => {
     let a_tmp = new Array();
     t1.forEach((t2, j) => {
       if(t2 == "0"){
       
-      let tmp_w = (j%2 == 0) ? WALL_SIZE :  ROAD_SIZE;
-      let tmp_h = (i%2 == 0) ? WALL_SIZE :  ROAD_SIZE;
+      let tmp_w = (j%2 == 0) ? WALL_WIDTH :  ROAD_WIDTH;
+      let tmp_h = (i%2 == 0) ? WALL_WIDTH :  ROAD_WIDTH;
       
-      let x = Math.floor(j/2)*(WALL_SIZE+ROAD_SIZE) + WALL_SIZE * (j%2);
-      let z = Math.floor(i/2)*(WALL_SIZE+ROAD_SIZE) + WALL_SIZE * (i%2);
+      let x = Math.floor(j/2)*(WALL_WIDTH+ROAD_WIDTH) +WALL_WIDTH * (j%2);
+      let z = Math.floor(i/2)*(WALL_WIDTH+ROAD_WIDTH) +WALL_WIDTH * (i%2);
       
-      let box = GameUtil.CreateRandColorCube3(new BABYLON.Vector3(x+tmp_w/2,WALL_SIZE/2,z+tmp_h/2), tmp_w, WALL_SIZE, tmp_h, scene);
+      let box = GameUtil.CreateRandColorCube3(new BABYLON.Vector3(x+tmp_w/2,WALL_WIDTH/2,z+tmp_h/2), tmp_w,WALL_WIDTH, tmp_h, scene);
       //box.width = tmp_w;
       //box.height = tmp_h;
       
       box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.4, restitution: 1 }, scene);
       
       //console.log(`{x:${x}, y:${y}, width:${tmp_w}, height:${tmp_h}}`);
-  
       a_tmp.push(box);
       }
     });
     a_cube.push(a_tmp);
     });
-    
-    /*for(let i = 0; i < CUBE_NUM; i++) {
-      let px = sx + CUBE_SIZE * Math.floor(i % X_MAX);
-      let py = sy + CUBE_SIZE * Math.floor(i / X_MAX);
-      //let py = Math.round((Math.random() - 0.5) * 19) * 50 + 25;
-      
-      let box = GameUtil.CreateRandColorCube(new BABYLON.Vector3(px,py,0), CUBE_SIZE, scene);
-      
-      box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 2, friction: 0.4, restitution: 1 }, scene);
-      
-      _boxList.push(box);
-      
-    }*/
 
-
-      return scene;
+    return scene;
 
     };
 
