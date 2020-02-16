@@ -19,7 +19,7 @@
             touch-action: none;
         }
     </style>
-    <script src=" https://cdn.babylonjs.com/cannon.js"></script>
+    <script src="https://cdn.babylonjs.com/Oimo.js"></script>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
     <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
@@ -78,11 +78,7 @@
   </script>
  <body>
   <canvas id="renderCanvas" touch-action="none"></canvas> //touch-action="none" for best results from PEP
-  <script type="module">
-  
-  //import GameUtil from '../modulejs/GameUtil.js';
-  import ExplosionParticleEffect from '../modulejs/ExplosionParticleEffect.js';
-    
+  <script>
   let canvas = document.getElementById("renderCanvas"); // Get the canvas element 
   let engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
@@ -99,7 +95,7 @@
     
     // Physics
     let gravityVector = new BABYLON.Vector3(0,-9.81, 0);
-    let physicsPlugin = new BABYLON.CannonJSPlugin();
+    let physicsPlugin = new BABYLON.OimoJSPlugin();
     scene.enablePhysics(gravityVector, physicsPlugin);
 
     var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
@@ -119,7 +115,8 @@
 
     matGround.diffuseColor = new BABYLON.Color3(0.65, 0.6, 0.5);
     
-    let boxShader = { fragmentElement: "fragmentShaderCode" };
+    let boxShader = { fragmentElement: "fragmentShaderCode"
+      };
   
     let procText = new BABYLON.CustomProceduralTexture("customtext", boxShader, 1024, scene);
       
@@ -157,7 +154,7 @@
       }
     }
     
-   // camera.parent = orb;
+    camera.parent = orb;
         
     var targetPos = orb.position;
     var delta = BABYLON.Vector3.Zero();
@@ -165,8 +162,69 @@
     let move_speed = 0.5;
     let Epsilon = 0.1;
     var last_distance = Number.POSITIVE_INFINITY;
-    
-    let explosionEffect = new ExplosionParticleEffect(scene);
+
+    // Create a particle system
+    var particleSystem = new BABYLON.ParticleSystem("particles", 2000, scene);
+
+    //Texture of each particle
+    particleSystem.particleTexture = new BABYLON.Texture("../textures/flare.png", scene);
+
+     // Where the particles come from
+    particleSystem.emitter =  new BABYLON.Vector3(0.0, 0.0, 0.0); // the starting object, the emitter
+    var emitterType = new BABYLON.SphereParticleEmitter();
+    emitterType.radius = 1;
+    emitterType.radiusRange = 0;
+
+    particleSystem.particleEmitterType = emitterType;
+
+    // Colors of all particles
+    particleSystem.color1 = new BABYLON.Color4(0.7, 0.8, 1.0, 1.0);
+    particleSystem.color2 = new BABYLON.Color4(0.2, 0.5, 1.0, 1.0);
+    particleSystem.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
+
+    // Size of each particle (random between...
+    particleSystem.minSize = 0.1;
+    particleSystem.maxSize = 0.5;
+
+    // Life time of each particle (random between...
+    particleSystem.minLifeTime = 0.1;
+    particleSystem.maxLifeTime = 1.0;
+
+    // Emission rate
+    particleSystem.emitRate = 1400;
+
+    // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
+    particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+
+    // Set the gravity of all particles
+    particleSystem.gravity = new BABYLON.Vector3(0, 0, 0);
+
+    // Angular speed, in radians
+    particleSystem.minAngularSpeed = 0;
+    particleSystem.maxAngularSpeed = Math.PI;
+
+    // Speed
+    particleSystem.minEmitPower = 10;
+    particleSystem.maxEmitPower = 10;
+    particleSystem.updateSpeed = 0.02;
+    particleSystem.targetStopDuration = 2;
+
+    particleSystem.addLifeTimeGradient(0, 0.8);
+    particleSystem.addLifeTimeGradient(1, 0.1);
+
+    //particleSystem.addEmitRateGradient(0, 5, 10);
+    //particleSystem.addEmitRateGradient(0.5, 5, 10);
+    //particleSystem.addEmitRateGradient(1.0, 800, 1000);
+
+    // Limit velocity
+    particleSystem.addLimitVelocityGradient(0, 1);
+    particleSystem.addLimitVelocityGradient(0.120, 0.983); particleSystem.addLimitVelocityGradient(0.445, 0.780); particleSystem.addLimitVelocityGradient(0.691, 0.502); particleSystem.addLimitVelocityGradient(0.930, 0.05); particleSystem.addLimitVelocityGradient(1.0, 0);
+    particleSystem.limitVelocityDamping = 0.6;
+  
+  
+    particleSystem.addStartSizeGradient(0, 8);
+    particleSystem.addStartSizeGradient(1, 1);
+
     //scene.debugLayer.show();
 
     scene.onPointerObservable.add((pointerInfo) => {
@@ -184,22 +242,15 @@
             //console.log("POINTER PICK" + pickInfo.pickedPoint);
             var pickInfo = pointerInfo.pickInfo;
             if (pickInfo.hit) {
-              explosionEffect.SetEmitterPos(new BABYLON.Vector3(pickInfo.pickedPoint.x, pickInfo.pickedPoint.y+0.1, pickInfo.pickedPoint.z));
-              
-              explosionEffect.Reset();
+              particleSystem.emitter = new BABYLON.Vector3(pickInfo.pickedPoint.x, pickInfo.pickedPoint.y+0.1, pickInfo.pickedPoint.z);
+              particleSystem.reset();
               // Start the particle system
-              explosionEffect.Start();
+              particleSystem.start();
               
               targetPos = pickInfo.pickedPoint;
               targetPos.y = orb.position.y;
               delta = pickInfo.pickedPoint.subtract(orb.position).normalize().scale(scene.getAnimationRatio()*move_speed);
-              delta.y = 0;
-
-              orb.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero());
-              let contactLocalRefPoint = BABYLON.Vector3.Zero();
-              //orb.physicsImpostor.applyForce(delta.scale(200), orb.getAbsolutePosition().add(contactLocalRefPoint));
-              orb.physicsImpostor.applyImpulse(delta.scale(200), orb.getAbsolutePosition().add(contactLocalRefPoint));
-   
+              
               last_distance = Number.POSITIVE_INFINITY;  
             }
             break;
@@ -217,10 +268,10 @@
     scene.registerBeforeRender(() => {
     let distance = BABYLON.Vector3.Distance(targetPos, orb.position);
     if(distance < Epsilon || distance > last_distance ){
-      orb.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero());
     } else {
       last_distance = distance;
-       }
+      orb.position.addInPlace(delta);
+    }
             
     });
 

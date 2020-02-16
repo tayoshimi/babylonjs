@@ -19,15 +19,13 @@
             touch-action: none;
         }
     </style>
-
-    <script src="https://cdn.babylonjs.com/ammo.js"></script>
+    <script src=" https://cdn.babylonjs.com/cannon.js"></script>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
     <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
     <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
-    <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
-    <script src=https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js></script>
+    <!--script src=https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js></script-->
     <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
   </head>
  <body>
@@ -48,13 +46,13 @@
     let scene = new BABYLON.Scene(engine);
     scene.clearColor = new BABYLON.Color3(.4, .6, .9);
     const camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 0, 0), scene);
-    camera.setPosition(new BABYLON.Vector3(80, 100, 300));
+    camera.setPosition(new BABYLON.Vector3(0, 100, 600));
     
     camera.setTarget(new BABYLON.Vector3(0, 0, 0));
 
-    camera.lowerBetaLimit = 0.1;
-    camera.upperBetaLimit = (Math.PI / 2) * 0.99;
-    camera.lowerRadiusLimit = 150;
+    //camera.lowerBetaLimit = 0.1;
+    //camera.upperBetaLimit = (Math.PI / 2) * 0.99;
+    //camera.lowerRadiusLimit = 150;
     
     camera.attachControl(canvas,true);     
 
@@ -65,9 +63,7 @@
     
     // Physics
     let gravityVector = new BABYLON.Vector3(0,-9.81, 0);
-    //let physicsPlugin = new BABYLON.CannonJSPlugin();
-    
-    let physicsPlugin = new BABYLON.AmmoJSPlugin(true, Ammo);
+    let physicsPlugin = new BABYLON.CannonJSPlugin();
     scene.enablePhysics(gravityVector, physicsPlugin);
 
     let ground = BABYLON.MeshBuilder.CreateGround("gd", { width: 1000.0, height: 1000.0 }, scene);
@@ -90,34 +86,9 @@
     ground.checkCollisions = true;
     ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, scene);
     
-    let guiTexture = GameUtil.createGui("cad", null);
-    
-    let textBlock = new BABYLON.GUI.TextBlock();
-    textBlock.text = "Text";
-    textBlock.fontSize = 50;
-    textBlock.color = "#ffffff";
-    //textBlock.color = "#ff0000";
-    textBlock.height = "60px";
-    textBlock.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    textBlock.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-    
-    guiTexture.addControl(textBlock);
-    
-    let options = new BABYLON.SceneOptimizerOptions();
-    options.addOptimization(new BABYLON.HardwareScalingOptimization(0, 1));
-
-    // Optimizer
-    var optimizer = new BABYLON.SceneOptimizer(scene, options);
-    optimizer.start();
-    
-    optimizer.onSuccessObservable.add(() => {
-      console.log(optimizer.currentFrameRate);
-    });
-    
-    const CUBE_NUM = 120;
-    const X_MAX = 10;
+    const CUBE_NUM = 200;
+    const X_MAX = 20;
     const CUBE_SIZE = 4;
-    let move_speed = 10;
     let sx = - X_MAX / 2 * CUBE_SIZE;
     let sy = 2;
     
@@ -128,64 +99,11 @@
       
       let box = GameUtil.CreateRandColorCube(new BABYLON.Vector3(px,py,0), CUBE_SIZE, scene);
       
-      box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 2, friction: 0.4, restitution: 1 }, scene);
+      box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 2, friction: 0.4, restitution: 0.3 }, scene);
       
       _boxList.push(box);
       
     }
-    
-    let ball = BABYLON.MeshBuilder.CreateSphere("ball", {diameter:10}, scene);
-    
-    ball.position = new BABYLON.Vector3(0,6,50);
-    
-    ball.physicsImpostor = new BABYLON.PhysicsImpostor(ball, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 2, friction: 0, restitution: 0.9 }, scene);
-    
-    ball.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 0, -100), ball.getAbsolutePosition());
-    
-    scene.onPointerObservable.add((pointerInfo) => {
-      switch (pointerInfo.type) {
-        case BABYLON.PointerEventTypes.POINTERDOWN:
-            //console.log("POINTER DOWN");
-            break;
-        case BABYLON.PointerEventTypes.POINTERUP:
-            //console.log("POINTER UP");
-            break;
-        case BABYLON.PointerEventTypes.POINTERMOVE:
-            //console.log("POINTER MOVE");
-            break;
-        case BABYLON.PointerEventTypes.POINTERPICK:
-            //console.log("POINTER PICK" + pickInfo.pickedPoint);
-            let pickInfo = pointerInfo.pickInfo;
-            if (pickInfo.hit) {
-              //particleSystem.emitter = new BABYLON.Vector3(pickInfo.pickedPoint.x, pickInfo.pickedPoint.y+0.1, pickInfo.pickedPoint.z);
-              //particleSystem.reset();
-              // Start the particle system
-              //particleSystem.start();
-              
-              let targetPos = pickInfo.pickedPoint;
-              targetPos.y = ball.position.y;
-              delta = pickInfo.pickedPoint.subtract(ball.position).normalize().scale(scene.getAnimationRatio()*move_speed);
-              delta.y = 0;
-
-              ball.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero());
-              let contactLocalRefPoint = BABYLON.Vector3.Zero();
-              //orb.physicsImpostor.applyForce(delta.scale(200), orb.getAbsolutePosition().add(contactLocalRefPoint));
-              ball.physicsImpostor.applyImpulse(delta.scale(200), ball.getAbsolutePosition().add(contactLocalRefPoint));
-   
-              last_distance = Number.POSITIVE_INFINITY;  
-            }
-            break;
-        case BABYLON.PointerEventTypes.POINTERTAP:
-            //console.log("POINTER TAP");
-            break;
-        case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
-           // console.log("POINTER DOUBLE-TAP");
-            break;
-        default:
-            break;
-        }
-    });
-    
     
     scene.registerBeforeRender(() => {
       // 立方体を動かす
@@ -194,8 +112,6 @@
       for (let i = 0; i < length; i++) {
           _boxList[i].position.y = 125 + 100 * Math.cos(time * 0.0005 * i + i / 10);
       }*/
-      
-      textBlock.text = "Current FPS:" + optimizer.currentFrameRate;
       
     });
 

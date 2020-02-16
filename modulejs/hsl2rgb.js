@@ -5,7 +5,7 @@
  * @param  {Number} l 引数の説明
  * @return { r: r, g: g, b: b } 255のrgb値
  *
- * @example <caption>Example usage of this method.</caption>
+ * @usage 
  * // hsl表色系で色をランダムに作成
  * const h = Math.random() * 360; // 色相
  * const s = 100; // 彩度
@@ -62,5 +62,5 @@ export function hsl2rgb(h, s, l) {
   b = Math.round((b + m) * 255);
 
   return { r: r, g: g, b: b };
-}
+};
 

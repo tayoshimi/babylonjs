@@ -32,12 +32,23 @@
   <canvas id="renderCanvas" touch-action="none"></canvas> //touch-action="none" for best results from PEP
 
   <script type="module">
+  class StateMachine {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    toString() {
+        return `{x:${this.x}, y:${this.y}}`;
+    }
+  }
+  
   import { hsl2rgb } from '../modulejs/hsl2rgb.js';
   
-    let canvas = document.getElementById("renderCanvas"); // Get the canvas element 
-    let engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+  let canvas = document.getElementById("renderCanvas"); // Get the canvas element 
+  let engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
-    let createScene = () => {
+  let createScene = () => {
     let scene = new BABYLON.Scene(engine);
     scene.clearColor = new BABYLON.Color3.Black();
     
