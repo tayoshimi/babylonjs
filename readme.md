@@ -1,5 +1,9 @@
 # Babylonjs Samples
 
+## Games
+
+### [フラッシュ音符](./games/flash_onpu.html)
+
 ## Simple Samples List
 
 ### [Create scene basic](./samples/create_scene_basic.html)
