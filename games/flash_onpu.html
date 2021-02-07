@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+<title>フラッシュ音符</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.51.0/dist/phaser.min.js"></script>
+</head>
+<body>
+<script type="module">
+
+//変数
+export let Game = {};
+export let Data = {};
+
+//Game Size
+//Game.width = 400;
+//Game.height = 600;
+
+Game.width = window.innerWidth;
+Game.height = window.innerHeight;
+
+
+let LEFT_SIDE = 10;
+let RIGHT_SIDE = Game.width - LEFT_SIDE;
+let TOP = 80;
+let VERTICAL_SPACE = Game.height / 10;
+let FONT_SIZE = 120;
+
+class Onpu {
+    /**
+     * @param {number} name 音符の名前
+     * @param {number} abs_val ト音記号のドを基準（０）として上下への相対値
+     */
+    constructor(name, abs_val) {
+        this.name = name;
+        this.abs_val = abs_val;
+    }
+}
+
+
+const GameState = {
+    Start: Symbol("Start"),
+    Thinking: Symbol("Thinking"),
+    Answer: Symbol("Answer"),
+};
+
+//Game Scene
+export default class Game_Scene extends Phaser.Scene {
+    
+    graphics = null;
+    lines = [];
+    do_line = null;
+    ans_txt = null;
+    circle = null;
+    onpus = [];
+    current = 0;
+    gameState = GameState.Start;
+    
+    constructor() {
+        super({ key: 'Game', active: false });
+    }
+    preload() {
+        this.load.image('toonkigo', 'assets/basic/toonkigo.png');
+    }
+
+    create() {
+        this.onpus = [
+            new Onpu("ド", 0),
+            new Onpu("レ", 1),
+            new Onpu("ミ", 2),
+            new Onpu("ファ", 3),
+            new Onpu("ソ", 4),
+            new Onpu("ラ", 5),
+            new Onpu("シ", 6),
+            new Onpu("ド", 7),
+            new Onpu("レ", 8),
+            new Onpu("ミ", 9),
+        ];
+        this.current = 0;
+
+        this.graphics = this.add.graphics({ lineStyle: { width: 4, color: 0xaaaa00 }, fillStyle: { color: 0x000000 } });
+
+        this.graphics.lineStyle(2, 0x000000);
+
+
+        let headkigo = this.add.image( 100, TOP + VERTICAL_SPACE * 2, 'toonkigo');
+        //headkigo.setOrigin(0.5);
+        headkigo.setScale(0.7);
+
+        for(let i=0; i<5; i++){
+            let ypos = TOP + VERTICAL_SPACE * i;
+            this.lines.push(new Phaser.Geom.Line(LEFT_SIDE, ypos, RIGHT_SIDE - LEFT_SIDE, ypos));
+        }
+        const xpos = Game.width /2 - VERTICAL_SPACE*1.5;
+        const ypos = TOP + VERTICAL_SPACE * 5;
+        this.do_line = new Phaser.Geom.Line(xpos, ypos, xpos+VERTICAL_SPACE*3, ypos)
+
+        this.circle = new Phaser.Geom.Ellipse(Game.width /2 , TOP + VERTICAL_SPACE * 5, VERTICAL_SPACE + 20, VERTICAL_SPACE);
+
+        this.ans_txt = this.add.text(Game.width/2, (Game.height-FONT_SIZE)/3, 'はじめ', { align: 'center', fontSize: FONT_SIZE, color: '#ff0000' });
+        this.ans_txt.setStroke('#dddd00', 16);
+        this.ans_txt.setOrigin(0.5);
+        this.ans_txt.visible = true;
+
+        this.input.on('pointerup', (pointer) => {
+
+            switch (this.gameState){
+            case GameState.Start:
+                this.setCurrentOnpu();
+                break;
+            case GameState.Thinking:
+                this.setAnswer();
+                break;
+            case GameState.Answer:
+                this.setCurrentOnpu();
+                break;
+            }
+        });
+
+        this.redraw();
+    }
+
+    update() {
+    //redraw() {
+        this.graphics.clear();
+
+        this.graphics.lineStyle(2, 0x000000);
+        for(let line of this.lines){
+            this.graphics.strokeLineShape(line);
+        }
+        //if(this.onpus[this.current].abs_val === 0){
+        this.graphics.strokeLineShape(this.do_line);
+        //}
+
+        this.graphics.fillEllipseShape(this.circle);
+
+    }
+
+    redraw(){
+
+    }
+
+    setCurrentOnpu() {
+        let next_val = Game_Scene.rand(this.onpus.length);
+
+        while(next_val == this.current){
+            next_val = Game_Scene.rand(this.onpus.length);
+        }
+        this.current = next_val;
+        
+        let y = TOP + VERTICAL_SPACE * 5 - VERTICAL_SPACE / 2 * this.onpus[this.current].abs_val;
+        this.circle.setPosition(Game.width /2 , y);
+
+        let originW = this.circle.width;
+        let originH = this.circle.height;
+        this.circle.setSize(originW*0.9, originH*0.9);
+
+        this.ans_txt.visible = false;
+        this.gameState = GameState.Thinking;
+
+        this.tweens.add({
+            targets: this.circle,
+            width: originW,
+            height: originH,
+            ease: 'Back',
+            easeParams: [ 3.5 ],
+            duration: 300
+        });
+        this.redraw();
+    }
+
+    setAnswer() {
+        this.ans_txt.setText(this.onpus[this.current].name);
+        this.ans_txt.visible = true;
+
+        let originW = this.ans_txt.width;
+        let originH = this.ans_txt.height;
+        this.ans_txt.setScale(0.8);
+        this.tweens.add({
+            targets: this.ans_txt,
+            scale: 1,
+            ease: 'Back',
+            easeParams: [ 3.5 ],
+            duration: 400
+        });
+        
+        this.gameState = GameState.Answer;
+    }
+
+
+      /**
+    * Return  a random number[0 - n]
+    * @param n
+    */
+    static rand(n) {
+        return Math.floor(Math.random() * n);
+    }
+
+
+
+    
+}
+
+//config
+const config = {
+	type: Phaser.AUTO,
+	parent: 'canvas',
+	width: Game.width,
+	height: Game.height,
+	pixelArt: true,
+    backgroundColor: '#fefefe',
+	/*physics: {
+    default: 'arcade',
+		arcade: {
+			gravity: {
+				y: 300
+			}
+		}
+	},*/
+	//scene: [Title_Scene, Game_Scene]
+  scene: [Game_Scene]
+};
+
+let game = new Phaser.Game(config);
+    
+</script>
+</body>
+</html>
