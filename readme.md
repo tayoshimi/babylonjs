@@ -37,6 +37,6 @@ This sample include HSL function and using set random color.
 
 ## Other
 
-### [Execute samples link](https://tayoshimi.github.io//)
+### [Execute samples link](https://tayoshimi.github.io/portfolio/)
 
 Web上で上記サンプルを動作させるためのリンク。
