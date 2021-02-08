@@ -8,32 +8,32 @@
 
 ### Simple Samples List
 
-#### [Create scene basic](./samples/create_scene_basic.html)
+#### [Create scene basic](./babylonjs/samples/create_scene_basic.html)
 
-#### [Bold edge block sample](./samples/bold_edge_shader.html)
+#### [Bold edge block sample](./babylonjs/samples/bold_edge_shader.html)
 
 This sample include using custom shader.
 
-#### [Bold edge blocks sample](./samples/bold_edge_blocks.html)
+#### [Bold edge blocks sample](./babylonjs/samples/bold_edge_blocks.html)
 
-#### [Floating boxies scene sample](./samples/floating_box.html)
+#### [Floating boxies scene sample](./babylonjs/samples/floating_box.html)
 
 This sample include HSL function and using set random color.
 
-#### [Floating boxies and render texture](./samples/floating_box_and_render_texture.html)
+#### [Floating boxies and render texture](./babylonjs/samples/floating_box_and_render_texture.html)
 
 
 ### A little complex Sample List
 
 少し複雑なサンプル
 
-#### [Tap move sample](./samples/tap_move_on_grid_ground_s02.html)
+#### [Tap move sample](./babylonjs/samples/tap_move_on_grid_ground_s02.html)
 
 赤玉をタップ操作で転がす。
 グリッドの地面はpixelシェーダで実装。
 
 
-#### [Brick breaker](./games/brick_breakers.html)
+#### [Brick breaker](./babylonjs/samples/brick_breakers.html)
 
 ## Other
 
