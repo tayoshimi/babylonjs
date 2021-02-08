@@ -61,21 +61,21 @@ export default class Game_Scene extends Phaser.Scene {
         super({ key: 'Game', active: false });
     }
     preload() {
-        this.load.image('toonkigo', 'assets/basic/toonkigo.png');
+        this.load.image('heonkigo', 'assets/basic/heonkigo.png');
     }
 
     create() {
         this.onpus = [
-            new Onpu("ド", 0),
-            new Onpu("レ", 1),
-            new Onpu("ミ", 2),
-            new Onpu("ファ", 3),
-            new Onpu("ソ", 4),
-            new Onpu("ラ", 5),
-            new Onpu("シ", 6),
-            new Onpu("ド", 7),
-            new Onpu("レ", 8),
-            new Onpu("ミ", 9),
+            new Onpu("ミ", 0),
+            new Onpu("ファ", 1),
+            new Onpu("ソ", 2),
+            new Onpu("ラ", 3),
+            new Onpu("シ", 4),
+            new Onpu("ド", 5),
+            new Onpu("レ", 6),
+            new Onpu("ミ", 7),
+            new Onpu("ファ", 8),
+            new Onpu("ソ", 9),
         ];
         this.current = 0;
 
@@ -84,9 +84,9 @@ export default class Game_Scene extends Phaser.Scene {
         this.graphics.lineStyle(2, 0x000000);
 
 
-        let headkigo = this.add.image( 100, TOP + VERTICAL_SPACE * 2, 'toonkigo');
+        let headkigo = this.add.image( 100, TOP + VERTICAL_SPACE * 2, 'heonkigo');
         //headkigo.setOrigin(0.5);
-        headkigo.setScale(0.7);
+        headkigo.setScale(0.2);
 
         for(let i=0; i<5; i++){
             let ypos = TOP + VERTICAL_SPACE * i;
